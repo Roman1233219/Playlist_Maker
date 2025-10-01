@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/main_container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
@@ -15,7 +16,6 @@
         app:titleTextAppearance="@style/ToolbarTitleTextAppearance"
         app:titleTextColor="@color/white"/>
 
-
     <Button
         android:id="@+id/button_search"
         style="@style/MyButtonStyle"
@@ -25,7 +25,6 @@
         android:text="@string/search"
         app:icon="@drawable/poisk"/>
 
-
     <Button
         android:id="@+id/button_media"
         style="@style/MyButtonStyle"
@@ -34,7 +33,6 @@
         android:layout_margin="16dp"
         android:text="@string/media"
         app:icon="@drawable/media"/>
-
 
     <Button
         android:id="@+id/button_settings"
