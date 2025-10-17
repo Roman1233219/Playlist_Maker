@@ -14,4 +14,29 @@
     <string name="help">Написать в поддержку</string>
     <string name="strel_r">Пользовательское соглашение</string>
 
+
+    <!-- кнопка очистить  в строке поиска -->
+    <string name="clear_search">Очистить поиск</string>
+
+
+    <!-- Ссылка на курс -->
+    <string name="android_course_url">https://practicum.yandex.ru/android-developer/</string>
+
+    <!-- Текст для отправки -->
+    <string name="share_course_text">Привет! Есть очень интересный курс от "Яндекс Практикум":\n\n🔗 %s\n\nТам можно научиться программировать для Android!</string>
+    <string name="share_dialog_title">Поделиться курсом</string>
+    <string name="no_apps_found">Не найдено приложений для отправки</string>
+
+    <!-- Данные для email -->
+    <string name="support_email">opzadacha@yandex.ru</string>
+    <string name="email_subject">Сообщение разработчикам и разработчицам приложения Playlist Maker</string>
+    <string name="email_body">Спасибо разработчикам и разработчицам за крутое приложение!</string>
+    <string name="no_email_client">Почтовое приложение не найдено</string>
+
+    <!-- Ссылка на оферту -->
+    <string name="terms_url">https://yandex.ru/legal/practicum_offer/ru/</string>
+    <string name="no_browser_found">Браузер не найден</string>
+    <string name="search_hint">Поиск</string>
+
+
 </resources>

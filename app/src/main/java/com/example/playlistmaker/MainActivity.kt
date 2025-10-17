@@ -28,18 +28,15 @@ class MainActivity : AppCompatActivity() {
         val settingsButton = findViewById<Button>(R.id.button_settings)
 
         searchButton.setOnClickListener {
-            val displayIntent = Intent(this, SearchActivity::class.java)
-            startActivity(displayIntent)
+            startActivity(Intent(this, SearchActivity::class.java))
         }
 
         mediaButton.setOnClickListener {
-            val displayIntent = Intent(this, MediaActivity::class.java)
-            startActivity(displayIntent)
+            startActivity(Intent(this, MediaActivity::class.java))
         }
 
         settingsButton.setOnClickListener {
-            val displayIntent = Intent(this, SettingActivity::class.java)
-            startActivity(displayIntent)
+            startActivity(Intent(this, SettingActivity::class.java))
         }
     }
 }
