@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="72dp"
+    android:orientation="horizontal"
+    android:paddingVertical="8dp">
+
+    <!-- Обложка  -->
+    <ImageView
+        android:id="@+id/track_artwork"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        android:layout_marginStart="13dp"
+        android:layout_marginEnd="8dp"
+        android:layout_gravity="center_vertical"
+        android:scaleType="centerCrop"
+        android:adjustViewBounds="true"
+        android:background="@drawable/album_cover_rounded"
+        tools:src="@tools:sample/avatars"
+        android:clipToOutline="true"/>
+
+    <!-- Основной контент -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:layout_gravity="center_vertical"
+        android:gravity="center_vertical">
+
+        <!-- Название трека -->
+        <TextView
+            android:id="@+id/track_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:fontFamily="@font/ys_display_regular"
+            android:textFontWeight="400"
+            tools:text="Bohemian Rhapsody"
+            android:textColor="?attr/android:textColorPrimary"
+            android:layout_marginBottom="1dp"/>
+
+        <!-- Информация об исполнителе и времени -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+
+            >
+
+            <TextView
+                android:id="@+id/artist_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="?attr/android:textColor"
+                android:textSize="11sp"
+                android:textFontWeight="400"
+                android:fontFamily="@font/ys_display_regular"
+                android:ellipsize="end"
+                android:maxLines="1"
+                tools:text="Queen" />
+
+            <!-- Разделитель -->
+            <View
+                android:layout_width="3dp"
+                android:layout_height="3dp"
+                android:layout_marginHorizontal="6dp"
+                android:background="@drawable/circle_divider" />
+
+            <TextView
+                android:id="@+id/track_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="?attr/android:textColor"
+                android:textSize="11sp"
+                android:textFontWeight="400"
+                android:fontFamily="@font/ys_display_regular"
+                tools:text="5:55" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Стрелка -->
+    <ImageView
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_gravity="center_vertical"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="12dp"
+        android:scaleType="fitCenter"
+        app:srcCompat="@drawable/arrow"
+        app:tint="?attr/android:textColor"
+        />
+</LinearLayout>
