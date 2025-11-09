@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+  <solid android:color="@color/album_cover_background_color"/>
+  <!--
+  album_cover_background_color выставил прозрачность на максимум .
+  Не знаю правда делают ли так или нет
+  но в требованиях нет ограничений поэтому пункту
+  -->
+
+  <corners android:radius="2dp"/>
+</shape>

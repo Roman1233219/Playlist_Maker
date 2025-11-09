@@ -14,6 +14,7 @@
         <item name="colorPrimaryContainer">@color/YP_Black</item>
         <item name="colorOnPrimaryContainer">@color/white</item>
         <item name="android:textColor">@color/green_active</item>
+        <item name="colorControlActivated">@color/blue</item>
 
 
         <item name="colorSurfaceVariant">@color/YP_Text_Gray</item>
