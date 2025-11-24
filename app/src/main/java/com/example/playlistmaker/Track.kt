@@ -17,7 +17,8 @@ data class Track(
    @SerializedName("trackTimeMillis")
    val trackTimeMillis: Long,
 
-   val artworkUrl100: String
+   val artworkUrl100: String,
+   val trackId: Int
 ) {
 
    val trackTime: String

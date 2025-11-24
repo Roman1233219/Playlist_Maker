@@ -20,6 +20,8 @@
         app:titleTextAppearance="@style/ToolbarTitleTextAppearance"
         app:titleTextColor="?attr/android:textColorPrimary" />
 
+
+
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="52dp"
@@ -57,6 +59,9 @@
             android:visibility="gone" />
     </FrameLayout>
 
+
+
+
     <!-- Контейнер для взаимоисключающих элементов -->
     <FrameLayout
         android:layout_width="match_parent"
@@ -68,6 +73,65 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:visibility="gone"/>
+
+        <!-- ИСТОРИЯ ПОИСКА -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/historyLayout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="16dp"
+            android:visibility="gone">
+
+            <!-- Заголовок истории -->
+            <TextView
+                android:id="@+id/history_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:fontFamily="@font/ys_display_medium"
+                android:gravity="center"
+                android:text="@string/search_history"
+                android:textColor="?android:attr/textColorPrimary"
+                android:textFontWeight="500"
+                android:textSize="19sp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <!-- Кнопка очистки истории -->
+            <Button
+                android:id="@+id/clear_history_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:background="@drawable/button_rounded_bg"
+                android:fontFamily="@font/ys_display_medium"
+                android:text="@string/clear_history"
+                android:textAllCaps="false"
+                android:textColor="?attr/colorOnPrimaryContainer"
+                android:textFontWeight="500"
+                android:textSize="14sp"
+                app:backgroundTint="?attr/colorPrimaryContainer"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent" />
+
+            <!-- Список истории -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/history_recycler"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="16dp"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                app:layout_constrainedHeight="true"
+                app:layout_constraintBottom_toTopOf="@id/clear_history_button"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/history_title"
+                tools:listitem="@layout/item_track" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
         <!-- Layout ошибки -->
         <LinearLayout
