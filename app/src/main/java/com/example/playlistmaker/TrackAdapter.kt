@@ -9,7 +9,9 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 
 class TrackAdapter(
-    private var tracks: List<Track>
+    private var tracks: List<Track>,
+    // 1. Добавляем в конструктор обработчик нажатия
+    private val onTrackClick: (Track) -> Unit
 ) : RecyclerView.Adapter<TrackAdapter.TrackViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TrackViewHolder {
@@ -18,7 +20,13 @@ class TrackAdapter(
     }
 
     override fun onBindViewHolder(holder: TrackViewHolder, position: Int) {
-        holder.bind(tracks[position])
+        val track = tracks[position]
+        holder.bind(track)
+
+        // 2. Устанавливаем слушатель на весь элемент
+        holder.itemView.setOnClickListener {
+            onTrackClick(track) // Вызываем переданное действие при клике
+        }
     }
 
     override fun getItemCount(): Int = tracks.size
@@ -39,11 +47,10 @@ class TrackAdapter(
             artistName.text = track.artistName
             trackTime.text = track.trackTime
 
-            // Загрузка обложки с Glide
             Glide.with(itemView)
                 .load(track.artworkUrl100)
-                .placeholder(R.drawable.placeholder) // Заглушка
-                .error(R.drawable.placeholder) // Заглушка при ошибке
+                .placeholder(R.drawable.placeholder)
+                .error(R.drawable.placeholder)
                 .into(artwork)
         }
     }
