@@ -52,6 +52,7 @@
             android:id="@+id/tema_button"
             style="@style/SettingItemStyle"
             android:text="@string/tema"
+            android:layout_gravity="start"
             android:textColor="?attr/android:textColorPrimary" />
 
         <TextView

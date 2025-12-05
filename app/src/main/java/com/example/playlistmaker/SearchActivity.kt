@@ -16,8 +16,10 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.appbar.MaterialToolbar
+import com.google.gson.Gson
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -34,14 +36,25 @@ class SearchActivity : AppCompatActivity() {
     private lateinit var errorText: TextView
     private lateinit var retryButton: Button
 
+    // --- НОВЫЕ ПЕРЕМЕННЫЕ ДЛЯ ИСТОРИИ ---
+    private lateinit var historyLayout: View
+    private lateinit var historyRecyclerView: RecyclerView
+    private lateinit var clearHistoryButton: Button
+    private lateinit var historyRepository: SearchHistoryRepository
+
     private val tracks = mutableListOf<Track>()
-    private val trackAdapter = TrackAdapter(tracks)
+    private val historyTracks = mutableListOf<Track>()
+
+    private lateinit var trackAdapter: TrackAdapter
+    private lateinit var historyAdapter: TrackAdapter
+
     private val iTunesService = RetrofitClient.api
 
     private val invalidCharsRegex = Regex("[^a-zA-Zа-яА-Я0-9\\s'.,&-]")
 
     companion object {
         private const val SEARCH_TEXT = "TEXT"
+        private const val SHARED_PREFS_NAME = "playlist_maker_history"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -51,6 +64,7 @@ class SearchActivity : AppCompatActivity() {
         val toolbar = findViewById<MaterialToolbar>(R.id.toolbar)
         toolbar.setNavigationOnClickListener { finish() }
 
+        // --- Инициализация всех View ---
         searchEditText = findViewById(R.id.search_edit_text)
         clearButton = findViewById(R.id.clear_button)
         recyclerView = findViewById(R.id.recycler_view_tracks)
@@ -61,32 +75,79 @@ class SearchActivity : AppCompatActivity() {
         errorText = findViewById(R.id.errorText)
         retryButton = findViewById(R.id.retryButton)
 
+        // --- ИНИЦИАЛИЗАЦИЯ ИСТОРИИ ---
+        historyLayout = findViewById(R.id.historyLayout)
+        historyRecyclerView = findViewById(R.id.history_recycler)
+        clearHistoryButton = findViewById(R.id.clear_history_button)
+
+        val sharedPrefs = getSharedPreferences(SHARED_PREFS_NAME, MODE_PRIVATE)
+        historyRepository = SearchHistoryRepository(sharedPrefs, Gson())
+
+        // --- НАСТРОЙКА АДАПТЕРОВ ---
+        trackAdapter = TrackAdapter(tracks) { track ->
+            historyRepository.addTrack(track)
+            Toast.makeText(this, "Трек '${track.trackName}' добавлен в историю", Toast.LENGTH_SHORT).show()
+        }
+        historyAdapter = TrackAdapter(historyTracks) { track ->
+            Toast.makeText(this, "Открываем трек '${track.trackName}' из истории", Toast.LENGTH_SHORT).show()
+        }
+
         recyclerView.adapter = trackAdapter
+        historyRecyclerView.adapter = historyAdapter
+
+        recyclerView.layoutManager = LinearLayoutManager(this)
+        historyRecyclerView.layoutManager = LinearLayoutManager(this)
 
         if (savedInstanceState != null) {
             searchEditText.setText(savedInstanceState.getString(SEARCH_TEXT, ""))
         }
 
+        // --- НАСТРОЙКА СЛУШАТЕЛЕЙ ---
+        setupListeners()
+
+        // При первом открытии показать историю, если она есть
+        if (searchEditText.text.isEmpty()) {
+            showHistory()
+        }
+    }
+
+    private fun setupListeners() {
         clearButton.setOnClickListener {
             searchEditText.setText("")
             hideKeyboard()
             tracks.clear()
             trackAdapter.notifyDataSetChanged()
-            showPlaceholder(PlaceholderType.EMPTY)
+            showHistory()
         }
 
         retryButton.setOnClickListener {
             performSearch()
         }
 
-        searchEditText.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) { }
+        clearHistoryButton.setOnClickListener {
+            historyRepository.clearHistory()
+            showHistory()
+        }
 
+        searchEditText.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 clearButton.visibility = if (s.isNullOrEmpty()) View.GONE else View.VISIBLE
+                if (searchEditText.hasFocus() && s?.isEmpty() == true) {
+                    showHistory()
+                } else {
+                    historyLayout.isVisible = false
+                    recyclerView.isVisible = true // ВОТ ИСПРАВЛЕНИЕ
+                }
             }
-            override fun afterTextChanged(s: Editable?) { }
+            override fun afterTextChanged(s: Editable?) {}
         })
+
+        searchEditText.setOnFocusChangeListener { _, hasFocus ->
+            if (hasFocus && searchEditText.text.isEmpty()) {
+                showHistory()
+            }
+        }
 
         searchEditText.setOnEditorActionListener { _, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_DONE) {
@@ -103,14 +164,22 @@ class SearchActivity : AppCompatActivity() {
         outState.putString(SEARCH_TEXT, searchEditText.text.toString())
     }
 
-    private fun isInputValid(input: String): Boolean {
-        return !invalidCharsRegex.containsMatchIn(input)
-    }
+    private fun showHistory() {
+        // Скрываем всё, кроме истории
+        recyclerView.isVisible = false
+        errorLayout.isVisible = false
+        noResultsLayout.isVisible = false
+        progressBar.isVisible = false
 
-    private fun normalizeString(input: String?): String {
-        if (input == null) return ""
-        val cleaned = invalidCharsRegex.replace(input, "")
-        return cleaned.replace(Regex("\\s+"), " ").trim()
+        val savedHistory = historyRepository.getHistory()
+        if (savedHistory.isNotEmpty()) {
+            historyTracks.clear()
+            historyTracks.addAll(savedHistory)
+            historyAdapter.notifyDataSetChanged()
+            historyLayout.isVisible = true
+        } else {
+            historyLayout.isVisible = false
+        }
     }
 
     private fun performSearch() {
@@ -142,7 +211,7 @@ class SearchActivity : AppCompatActivity() {
                         tracks.clear()
                         tracks.addAll(cleanedTracks)
                         trackAdapter.notifyDataSetChanged()
-                        showPlaceholder(PlaceholderType.EMPTY)
+                        showPlaceholder(PlaceholderType.RESULTS)
                     } else {
                         showPlaceholder(PlaceholderType.NO_RESULTS)
                     }
@@ -157,18 +226,31 @@ class SearchActivity : AppCompatActivity() {
         })
     }
 
+    private fun isInputValid(input: String): Boolean {
+        return !invalidCharsRegex.containsMatchIn(input)
+    }
+
+    private fun normalizeString(input: String?): String {
+        if (input == null) return ""
+        val cleaned = invalidCharsRegex.replace(input, "")
+        return cleaned.replace(Regex("\\s+"), " ").trim()
+    }
+
     private enum class PlaceholderType {
-        EMPTY,
+        RESULTS,
         LOADING,
         ERROR,
-        NO_RESULTS
+        NO_RESULTS,
     }
 
     private fun showPlaceholder(type: PlaceholderType) {
-        recyclerView.isVisible = type == PlaceholderType.EMPTY
+        recyclerView.isVisible = type == PlaceholderType.RESULTS
         progressBar.isVisible = type == PlaceholderType.LOADING
         errorLayout.isVisible = type == PlaceholderType.ERROR
         noResultsLayout.isVisible = type == PlaceholderType.NO_RESULTS
+
+        // Всегда скрываем историю, когда показываем какой-либо плейсхолдер
+        historyLayout.isVisible = false
 
         if (type == PlaceholderType.ERROR) {
             errorText.text = getString(R.string.connection_error)
