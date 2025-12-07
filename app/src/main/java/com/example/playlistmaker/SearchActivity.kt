@@ -1,6 +1,7 @@
 package com.example.playlistmaker
 
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -13,7 +14,6 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -84,13 +84,21 @@ class SearchActivity : AppCompatActivity() {
         historyRepository = SearchHistoryRepository(sharedPrefs, Gson())
 
         // --- НАСТРОЙКА АДАПТЕРОВ ---
-        trackAdapter = TrackAdapter(tracks) { track ->
-            historyRepository.addTrack(track)
-            Toast.makeText(this, "Трек '${track.trackName}' добавлен в историю", Toast.LENGTH_SHORT).show()
+        val onTrackClick: (Track) -> Unit = { track ->
+            // Добавляем в историю только при клике из основного списка
+            if (tracks.contains(track)) {
+                historyRepository.addTrack(track)
+            }
+
+            // Создаем Intent для перехода на экран медиа
+            val mediaIntent = Intent(this, MediaActivity::class.java).apply {
+                putExtra("track", track)
+            }
+            startActivity(mediaIntent)
         }
-        historyAdapter = TrackAdapter(historyTracks) { track ->
-            Toast.makeText(this, "Открываем трек '${track.trackName}' из истории", Toast.LENGTH_SHORT).show()
-        }
+
+        trackAdapter = TrackAdapter(tracks, onTrackClick)
+        historyAdapter = TrackAdapter(historyTracks, onTrackClick)
 
         recyclerView.adapter = trackAdapter
         historyRecyclerView.adapter = historyAdapter
@@ -185,11 +193,6 @@ class SearchActivity : AppCompatActivity() {
     private fun performSearch() {
         val rawQuery = searchEditText.text.toString()
         if (rawQuery.isEmpty()) return
-
-        if (!isInputValid(rawQuery)) {
-            Toast.makeText(applicationContext, "Введены недопустимые символы", Toast.LENGTH_SHORT).show()
-            return
-        }
 
         val query = normalizeString(rawQuery)
         if (query.isEmpty()) return

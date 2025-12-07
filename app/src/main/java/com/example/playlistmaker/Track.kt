@@ -1,32 +1,51 @@
 package com.example.playlistmaker
 
 import java.io.Serializable
-import kotlin.jvm.javaClass
-import kotlin.takeIf
-import kotlin.text.format
-import kotlin.text.isNotEmpty
-import kotlin.text.replaceAfterLast
-import kotlin.text.substring
-
-import com.google.gson.annotations.SerializedName
 
 data class Track(
+   val trackId: Long,
    val trackName: String,
    val artistName: String,
-
-   @SerializedName("trackTimeMillis")
    val trackTimeMillis: Long,
-
    val artworkUrl100: String,
-   val trackId: Int
-) {
+   val collectionName: String?,
+   val releaseDate: String?,
+   val primaryGenreName: String?,
+   val country: String? // Добавляем поле country
+) : Serializable {
 
-   val trackTime: String
-      get() {
-         // Рассчитываем минуты и секунды
+   fun getFormattedTime(): String {
+      return if (trackTimeMillis > 0) {
          val minutes = (trackTimeMillis / 1000) / 60
          val seconds = (trackTimeMillis / 1000) % 60
-         // Форматируем в строку "мм:сс"
-         return String.format("%02d:%02d", minutes, seconds)
+         String.format("%02d:%02d", minutes, seconds)
+      } else {
+         "--:--"
       }
+   }
+
+   // Функция для получения обложки высокого качества
+   fun getCoverArtwork(): String {
+      return if (artworkUrl100.isNotEmpty()) {
+         artworkUrl100.replaceAfterLast('/', "512x512bb.jpg")
+      } else {
+         ""
+      }
+   }
+
+   // Функция для получения года из releaseDate
+   fun getReleaseYear(): String? {
+      return releaseDate?.takeIf { it.length >= 4 }?.substring(0, 4)
+   }
+
+   override fun equals(other: Any?): Boolean {
+      if (this === other) return true
+      if (javaClass != other?.javaClass) return false
+      other as Track
+      return trackId == other.trackId
+   }
+
+   override fun hashCode(): Int {
+      return trackId.hashCode()
+   }
 }
