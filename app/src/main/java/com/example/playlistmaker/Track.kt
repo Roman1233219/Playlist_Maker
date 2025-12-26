@@ -11,7 +11,8 @@ data class Track(
    val collectionName: String?,
    val releaseDate: String?,
    val primaryGenreName: String?,
-   val country: String? // Добавляем поле country
+   val country: String?,
+   val previewUrl: String? //  поле для ссылки на  трек
 ) : Serializable {
 
    fun getFormattedTime(): String {
