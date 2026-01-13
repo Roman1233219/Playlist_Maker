@@ -3,6 +3,8 @@ package com.example.playlistmaker
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
@@ -36,7 +38,6 @@ class SearchActivity : AppCompatActivity() {
     private lateinit var errorText: TextView
     private lateinit var retryButton: Button
 
-    // --- НОВЫЕ ПЕРЕМЕННЫЕ ДЛЯ ИСТОРИИ ---
     private lateinit var historyLayout: View
     private lateinit var historyRecyclerView: RecyclerView
     private lateinit var clearHistoryButton: Button
@@ -52,9 +53,14 @@ class SearchActivity : AppCompatActivity() {
 
     private val invalidCharsRegex = Regex("[^a-zA-Zа-яА-Я0-9\\s'.,&-]")
 
+    private val handler = Handler(Looper.getMainLooper())
+    private val searchRunnable = Runnable { performSearch() }
+
     companion object {
+        const val TRACK_KEY = "track"
         private const val SEARCH_TEXT = "TEXT"
         private const val SHARED_PREFS_NAME = "playlist_maker_history"
+        private const val SEARCH_DEBOUNCE_DELAY = 2000L
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -64,7 +70,6 @@ class SearchActivity : AppCompatActivity() {
         val toolbar = findViewById<MaterialToolbar>(R.id.toolbar)
         toolbar.setNavigationOnClickListener { finish() }
 
-        // --- Инициализация всех View ---
         searchEditText = findViewById(R.id.search_edit_text)
         clearButton = findViewById(R.id.clear_button)
         recyclerView = findViewById(R.id.recycler_view_tracks)
@@ -75,7 +80,6 @@ class SearchActivity : AppCompatActivity() {
         errorText = findViewById(R.id.errorText)
         retryButton = findViewById(R.id.retryButton)
 
-        // --- ИНИЦИАЛИЗАЦИЯ ИСТОРИИ ---
         historyLayout = findViewById(R.id.historyLayout)
         historyRecyclerView = findViewById(R.id.history_recycler)
         clearHistoryButton = findViewById(R.id.clear_history_button)
@@ -83,16 +87,13 @@ class SearchActivity : AppCompatActivity() {
         val sharedPrefs = getSharedPreferences(SHARED_PREFS_NAME, MODE_PRIVATE)
         historyRepository = SearchHistoryRepository(sharedPrefs, Gson())
 
-        // --- НАСТРОЙКА АДАПТЕРОВ ---
         val onTrackClick: (Track) -> Unit = { track ->
-            // Добавляем в историю только при клике из основного списка
             if (tracks.contains(track)) {
                 historyRepository.addTrack(track)
             }
 
-            // Создаем Intent для перехода на экран медиа
             val mediaIntent = Intent(this, MediaActivity::class.java).apply {
-                putExtra("track", track)
+                putExtra(TRACK_KEY, track)
             }
             startActivity(mediaIntent)
         }
@@ -110,10 +111,8 @@ class SearchActivity : AppCompatActivity() {
             searchEditText.setText(savedInstanceState.getString(SEARCH_TEXT, ""))
         }
 
-        // --- НАСТРОЙКА СЛУШАТЕЛЕЙ ---
         setupListeners()
 
-        // При первом открытии показать историю, если она есть
         if (searchEditText.text.isEmpty()) {
             showHistory()
         }
@@ -129,6 +128,7 @@ class SearchActivity : AppCompatActivity() {
         }
 
         retryButton.setOnClickListener {
+            hideKeyboard()
             performSearch()
         }
 
@@ -142,10 +142,12 @@ class SearchActivity : AppCompatActivity() {
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 clearButton.visibility = if (s.isNullOrEmpty()) View.GONE else View.VISIBLE
                 if (searchEditText.hasFocus() && s?.isEmpty() == true) {
+                    handler.removeCallbacks(searchRunnable)
                     showHistory()
                 } else {
                     historyLayout.isVisible = false
-                    recyclerView.isVisible = true // ВОТ ИСПРАВЛЕНИЕ
+                    recyclerView.isVisible = true
+                    searchDebounce()
                 }
             }
             override fun afterTextChanged(s: Editable?) {}
@@ -159,6 +161,7 @@ class SearchActivity : AppCompatActivity() {
 
         searchEditText.setOnEditorActionListener { _, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_DONE) {
+                hideKeyboard()
                 performSearch()
                 true
             } else {
@@ -173,7 +176,6 @@ class SearchActivity : AppCompatActivity() {
     }
 
     private fun showHistory() {
-        // Скрываем всё, кроме истории
         recyclerView.isVisible = false
         errorLayout.isVisible = false
         noResultsLayout.isVisible = false
@@ -190,6 +192,11 @@ class SearchActivity : AppCompatActivity() {
         }
     }
 
+    private fun searchDebounce() {
+        handler.removeCallbacks(searchRunnable)
+        handler.postDelayed(searchRunnable, SEARCH_DEBOUNCE_DELAY)
+    }
+
     private fun performSearch() {
         val rawQuery = searchEditText.text.toString()
         if (rawQuery.isEmpty()) return
@@ -197,7 +204,6 @@ class SearchActivity : AppCompatActivity() {
         val query = normalizeString(rawQuery)
         if (query.isEmpty()) return
 
-        hideKeyboard()
         showPlaceholder(PlaceholderType.LOADING)
 
         iTunesService.searchTracks(query).enqueue(object : Callback<TrackResponse> {
@@ -252,7 +258,6 @@ class SearchActivity : AppCompatActivity() {
         errorLayout.isVisible = type == PlaceholderType.ERROR
         noResultsLayout.isVisible = type == PlaceholderType.NO_RESULTS
 
-        // Всегда скрываем историю, когда показываем какой-либо плейсхолдер
         historyLayout.isVisible = false
 
         if (type == PlaceholderType.ERROR) {
