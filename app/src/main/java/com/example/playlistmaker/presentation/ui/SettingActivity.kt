@@ -1,4 +1,4 @@
-package com.example.playlistmaker
+package com.example.playlistmaker.presentation.ui
 
 import android.content.ActivityNotFoundException
 import android.content.Intent
@@ -12,8 +12,9 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SwitchCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.example.playlistmaker.App
+import com.example.playlistmaker.R
 
-// Наследуемся от AppCompatActivity, а не от BaseActivity
 class SettingActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
@@ -35,18 +36,12 @@ class SettingActivity : AppCompatActivity() {
 
         val themeSwitch = findViewById<SwitchCompat>(R.id.tema_button)
 
-        // Получаем доступ к App и его состоянию
         val app = applicationContext as App
-
-        // Устанавливаем начальное положение свитча
         themeSwitch.isChecked = app.darkTheme
 
-        // Слушатель переключения темы
         themeSwitch.setOnCheckedChangeListener { _, isChecked ->
-            // 1. Вызываем метод из App для смены темы
             (applicationContext as App).applyTheme(isChecked)
 
-            // 2. Сохраняем новое значение в SharedPreferences
             val sharedPrefs = getSharedPreferences(App.PREFERENCES, MODE_PRIVATE)
             sharedPrefs.edit()
                 .putBoolean(App.THEME_KEY, isChecked)

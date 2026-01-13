@@ -1,4 +1,4 @@
-package com.example.playlistmaker
+package com.example.playlistmaker.presentation.adapters
 
 import android.view.LayoutInflater
 import android.view.View
@@ -7,10 +7,11 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.example.playlistmaker.R
+import com.example.playlistmaker.domain.models.Track
 
 class TrackAdapter(
     private var tracks: List<Track>,
-    // 1. Добавляем в конструктор обработчик нажатия
     private val onTrackClick: (Track) -> Unit
 ) : RecyclerView.Adapter<TrackAdapter.TrackViewHolder>() {
 
@@ -23,9 +24,8 @@ class TrackAdapter(
         val track = tracks[position]
         holder.bind(track)
 
-        // 2. Устанавливаем слушатель на весь элемент
         holder.itemView.setOnClickListener {
-            onTrackClick(track) // Вызываем переданное действие при клике
+            onTrackClick(track)
         }
     }
 
