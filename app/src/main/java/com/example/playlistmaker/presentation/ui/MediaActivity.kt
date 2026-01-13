@@ -1,5 +1,6 @@
 package com.example.playlistmaker.presentation.ui
 
+import android.media.MediaPlayer
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
@@ -16,9 +17,7 @@ import androidx.core.view.WindowInsetsCompat
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.example.playlistmaker.R
-import com.example.playlistmaker.domain.api.AudioPlayerInteractor
 import com.example.playlistmaker.domain.models.Track
-import com.example.playlistmaker.util.Creator
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -45,16 +44,16 @@ class MediaActivity : AppCompatActivity() {
     private lateinit var albumGroup: View
     private lateinit var playPauseButton: ImageButton
 
-    private lateinit var audioPlayerInteractor: AudioPlayerInteractor
+    private var mediaPlayer = MediaPlayer()
     private var playerState = STATE_DEFAULT
     
     private val mainHandler = Handler(Looper.getMainLooper())
+    private val timeFormat = SimpleDateFormat("mm:ss", Locale.getDefault())
 
     private val updateTimerTask = object : Runnable {
         override fun run() {
             if (playerState == STATE_PLAYING) {
-                timerText.text = SimpleDateFormat("mm:ss", Locale.getDefault())
-                    .format(audioPlayerInteractor.getCurrentPosition())
+                timerText.text = timeFormat.format(mediaPlayer.currentPosition)
                 mainHandler.postDelayed(this, TIMER_UPDATE_DELAY)
             }
         }
@@ -72,8 +71,6 @@ class MediaActivity : AppCompatActivity() {
             insets
         }
 
-        audioPlayerInteractor = Creator.provideAudioPlayerInteractor()
-
         val backButton = findViewById<TextView>(R.id.button_back)
         backButton.setOnClickListener { finish() }
 
@@ -88,6 +85,8 @@ class MediaActivity : AppCompatActivity() {
         countryValue = findViewById(R.id.country_value)
         albumGroup = findViewById(R.id.album_container)
         playPauseButton = findViewById(R.id.btn_play_pause)
+        
+        timerText.text = timeFormat.format(0L) // исправлено согласно рекомендации
 
         val track = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             intent.getSerializableExtra(TRACK_KEY, Track::class.java)
@@ -126,28 +125,27 @@ class MediaActivity : AppCompatActivity() {
     }
 
     private fun preparePlayer(url: String) {
-        audioPlayerInteractor.preparePlayer(
-            url,
-            onPrepared = {
-                playPauseButton.isEnabled = true
-                playerState = STATE_PREPARED
-            },
-            onCompletion = {
-                pausePlayer()
-                timerText.text = "00:00"
-            }
-        )
+        mediaPlayer.setDataSource(url)
+        mediaPlayer.prepareAsync()
+        mediaPlayer.setOnPreparedListener {
+            playPauseButton.isEnabled = true
+            playerState = STATE_PREPARED
+        }
+        mediaPlayer.setOnCompletionListener {
+            pausePlayer()
+            timerText.text = timeFormat.format(0L) // исправлено согласно рекомендации
+        }
     }
 
     private fun startPlayer() {
-        audioPlayerInteractor.startPlayer()
+        mediaPlayer.start()
         playPauseButton.setImageResource(R.drawable.pause)
         playerState = STATE_PLAYING
         mainHandler.post(updateTimerTask)
     }
 
     private fun pausePlayer() {
-        audioPlayerInteractor.pausePlayer()
+        mediaPlayer.pause()
         playPauseButton.setImageResource(R.drawable.play)
         playerState = STATE_PAUSED
         mainHandler.removeCallbacks(updateTimerTask)
@@ -167,7 +165,7 @@ class MediaActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        audioPlayerInteractor.releasePlayer()
+        mediaPlayer.release()
         mainHandler.removeCallbacks(updateTimerTask)
     }
 

@@ -27,10 +27,10 @@ class SearchHistoryRepositoryImpl(
         val history = getHistory().toMutableList()
         history.removeAll { it.trackId == track.trackId }
         history.add(0, track)
-        
+
         val limitedHistory = history.take(MAX_HISTORY_SIZE)
         val dtoHistory = limitedHistory.map { mapToDto(it) }
-        
+
         val json = gson.toJson(dtoHistory)
         sharedPreferences.edit()
             .putString(SEARCH_HISTORY_KEY, json)
@@ -45,17 +45,31 @@ class SearchHistoryRepositoryImpl(
 
     private fun mapToDomain(dto: TrackDto): Track {
         return Track(
-            dto.trackId, dto.trackName, dto.artistName, dto.trackTimeMillis,
-            dto.artworkUrl100, dto.collectionName, dto.releaseDate,
-            dto.primaryGenreName, dto.country, dto.previewUrl
+            trackId = dto.trackId, // исправлено согласно рекомендации
+            trackName = dto.trackName,
+            artistName = dto.artistName,
+            trackTimeMillis = dto.trackTimeMillis,
+            artworkUrl100 = dto.artworkUrl100,
+            collectionName = dto.collectionName,
+            releaseDate = dto.releaseDate,
+            primaryGenreName = dto.primaryGenreName,
+            country = dto.country,
+            previewUrl = dto.previewUrl
         )
     }
 
     private fun mapToDto(track: Track): TrackDto {
         return TrackDto(
-            track.trackId, track.trackName, track.artistName, track.trackTimeMillis,
-            track.artworkUrl100, track.collectionName, track.releaseDate,
-            track.primaryGenreName, track.country, track.previewUrl
+            trackId = track.trackId, // исправлено согласно рекомендации
+            trackName = track.trackName,
+            artistName = track.artistName,
+            trackTimeMillis = track.trackTimeMillis,
+            artworkUrl100 = track.artworkUrl100,
+            collectionName = track.collectionName,
+            releaseDate = track.releaseDate,
+            primaryGenreName = track.primaryGenreName,
+            country = track.country,
+            previewUrl = track.previewUrl
         )
     }
 

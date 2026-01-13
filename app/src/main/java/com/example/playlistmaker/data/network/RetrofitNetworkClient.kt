@@ -6,16 +6,15 @@ import android.net.NetworkCapabilities
 import com.example.playlistmaker.data.NetworkClient
 import com.example.playlistmaker.data.dto.Response
 import com.example.playlistmaker.data.dto.TrackSearchRequest
-import com.example.playlistmaker.data.dto.TrackSearchResponse
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
+private const val ITUNES_BASE_URL = "https://itunes.apple.com/" // исправлено согласно рекомендации
+
 class RetrofitNetworkClient(private val context: Context) : NetworkClient {
 
-    private val iTunesBaseUrl = "https://itunes.apple.com/"
-
     private val retrofit = Retrofit.Builder()
-        .baseUrl(iTunesBaseUrl)
+        .baseUrl(ITUNES_BASE_URL)
         .addConverterFactory(GsonConverterFactory.create())
         .build()
 

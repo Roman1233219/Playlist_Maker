@@ -1,6 +1,8 @@
 package com.example.playlistmaker.domain.models
 
 import java.io.Serializable
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 data class Track(
     val trackId: Long,
@@ -15,36 +17,12 @@ data class Track(
     val previewUrl: String?
 ) : Serializable {
 
-    fun getFormattedTime(): String {
-        return if (trackTimeMillis > 0) {
-            val minutes = (trackTimeMillis / 1000) / 60
-            val seconds = (trackTimeMillis / 1000) % 60
-            String.format("%02d:%02d", minutes, seconds)
-        } else {
-            "--:--"
-        }
-    }
+    fun getFormattedTime(): String = SimpleDateFormat("mm:ss", Locale.getDefault()).format(trackTimeMillis)
 
-    fun getCoverArtwork(): String {
-        return if (artworkUrl100.isNotEmpty()) {
-            artworkUrl100.replaceAfterLast('/', "512x512bb.jpg")
-        } else {
-            ""
-        }
-    }
+
+    fun getCoverArtwork() = artworkUrl100.replaceAfterLast('/',"512x512bb.jpg")
 
     fun getReleaseYear(): String? {
         return releaseDate?.takeIf { it.length >= 4 }?.substring(0, 4)
     }
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-        other as Track
-        return trackId == other.trackId
-    }
-
-    override fun hashCode(): Int {
-        return trackId.hashCode()
-    }
-}
+} // исправлено согласно рекомендации
