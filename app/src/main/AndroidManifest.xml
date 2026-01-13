@@ -3,8 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
-    <!--вот что я не поставил - хотя почему то на физическом устройстве
-    работает и без него -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
     <application
         android:name=".App"
         android:allowBackup="true"
@@ -24,9 +24,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".SettingActivity" />
-        <activity android:name=".SearchActivity" />
-        <activity android:name=".MediaActivity" />
+        <activity android:name=".presentation.ui.SettingActivity" />
+        <activity android:name=".presentation.ui.SearchActivity" />
+        <activity android:name=".presentation.ui.MediaActivity" />
     </application>
 
 </manifest>

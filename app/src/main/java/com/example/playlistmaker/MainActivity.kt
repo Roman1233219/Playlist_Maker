@@ -8,6 +8,9 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.example.playlistmaker.presentation.ui.MediaActivity
+import com.example.playlistmaker.presentation.ui.SearchActivity
+import com.example.playlistmaker.presentation.ui.SettingActivity
 
 
 class MainActivity : AppCompatActivity() {

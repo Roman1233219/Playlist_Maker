@@ -1,4 +1,4 @@
-package com.example.playlistmaker
+package com.example.playlistmaker.presentation.ui
 
 import android.content.Context
 import android.content.Intent
@@ -16,15 +16,20 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.playlistmaker.R
+import com.example.playlistmaker.domain.api.SearchHistoryInteractor
+import com.example.playlistmaker.domain.api.TracksInteractor
+import com.example.playlistmaker.domain.models.Track
+import com.example.playlistmaker.presentation.adapters.TrackAdapter
+import com.example.playlistmaker.util.Creator
 import com.google.android.material.appbar.MaterialToolbar
-import com.google.gson.Gson
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 
 class SearchActivity : AppCompatActivity() {
 
@@ -41,7 +46,6 @@ class SearchActivity : AppCompatActivity() {
     private lateinit var historyLayout: View
     private lateinit var historyRecyclerView: RecyclerView
     private lateinit var clearHistoryButton: Button
-    private lateinit var historyRepository: SearchHistoryRepository
 
     private val tracks = mutableListOf<Track>()
     private val historyTracks = mutableListOf<Track>()
@@ -49,7 +53,8 @@ class SearchActivity : AppCompatActivity() {
     private lateinit var trackAdapter: TrackAdapter
     private lateinit var historyAdapter: TrackAdapter
 
-    private val iTunesService = RetrofitClient.api
+    private lateinit var tracksInteractor: TracksInteractor
+    private lateinit var historyInteractor: SearchHistoryInteractor
 
     private val invalidCharsRegex = Regex("[^a-zA-Zа-яА-Я0-9\\s'.,&-]")
 
@@ -59,13 +64,23 @@ class SearchActivity : AppCompatActivity() {
     companion object {
         const val TRACK_KEY = "track"
         private const val SEARCH_TEXT = "TEXT"
-        private const val SHARED_PREFS_NAME = "playlist_maker_history"
         private const val SEARCH_DEBOUNCE_DELAY = 2000L
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_search)
+
+        val searchContainer = findViewById<View>(R.id.search_container)
+        ViewCompat.setOnApplyWindowInsetsListener(searchContainer) { v, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            insets
+        }
+
+        tracksInteractor = Creator.provideTracksInteractor(this)
+        historyInteractor = Creator.provideSearchHistoryInteractor(this)
 
         val toolbar = findViewById<MaterialToolbar>(R.id.toolbar)
         toolbar.setNavigationOnClickListener { finish() }
@@ -84,14 +99,8 @@ class SearchActivity : AppCompatActivity() {
         historyRecyclerView = findViewById(R.id.history_recycler)
         clearHistoryButton = findViewById(R.id.clear_history_button)
 
-        val sharedPrefs = getSharedPreferences(SHARED_PREFS_NAME, MODE_PRIVATE)
-        historyRepository = SearchHistoryRepository(sharedPrefs, Gson())
-
         val onTrackClick: (Track) -> Unit = { track ->
-            if (tracks.contains(track)) {
-                historyRepository.addTrack(track)
-            }
-
+            historyInteractor.addTrack(track)
             val mediaIntent = Intent(this, MediaActivity::class.java).apply {
                 putExtra(TRACK_KEY, track)
             }
@@ -133,7 +142,7 @@ class SearchActivity : AppCompatActivity() {
         }
 
         clearHistoryButton.setOnClickListener {
-            historyRepository.clearHistory()
+            historyInteractor.clearHistory()
             showHistory()
         }
 
@@ -181,7 +190,7 @@ class SearchActivity : AppCompatActivity() {
         noResultsLayout.isVisible = false
         progressBar.isVisible = false
 
-        val savedHistory = historyRepository.getHistory()
+        val savedHistory = historyInteractor.getHistory()
         if (savedHistory.isNotEmpty()) {
             historyTracks.clear()
             historyTracks.addAll(savedHistory)
@@ -206,37 +215,24 @@ class SearchActivity : AppCompatActivity() {
 
         showPlaceholder(PlaceholderType.LOADING)
 
-        iTunesService.searchTracks(query).enqueue(object : Callback<TrackResponse> {
-            override fun onResponse(call: Call<TrackResponse>, response: Response<TrackResponse>) {
-                if (response.isSuccessful) {
-                    val foundTracks = response.body()?.results
-                    if (!foundTracks.isNullOrEmpty()) {
-                        val cleanedTracks = foundTracks.map { track ->
-                            track.copy(
-                                trackName = normalizeString(track.trackName),
-                                artistName = normalizeString(track.artistName)
-                            )
+        tracksInteractor.search(query, object : TracksInteractor.TracksConsumer {
+            override fun consume(foundTracks: List<Track>?, errorMessage: String?) {
+                handler.post {
+                    if (foundTracks != null) {
+                        if (foundTracks.isNotEmpty()) {
+                            tracks.clear()
+                            tracks.addAll(foundTracks)
+                            trackAdapter.notifyDataSetChanged()
+                            showPlaceholder(PlaceholderType.RESULTS)
+                        } else {
+                            showPlaceholder(PlaceholderType.NO_RESULTS)
                         }
-                        tracks.clear()
-                        tracks.addAll(cleanedTracks)
-                        trackAdapter.notifyDataSetChanged()
-                        showPlaceholder(PlaceholderType.RESULTS)
-                    } else {
-                        showPlaceholder(PlaceholderType.NO_RESULTS)
+                    } else if (errorMessage != null) {
+                        showPlaceholder(PlaceholderType.ERROR)
                     }
-                } else {
-                    showPlaceholder(PlaceholderType.ERROR)
                 }
             }
-
-            override fun onFailure(call: Call<TrackResponse>, t: Throwable) {
-                showPlaceholder(PlaceholderType.ERROR)
-            }
         })
-    }
-
-    private fun isInputValid(input: String): Boolean {
-        return !invalidCharsRegex.containsMatchIn(input)
     }
 
     private fun normalizeString(input: String?): String {

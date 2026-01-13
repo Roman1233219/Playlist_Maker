@@ -1,6 +1,5 @@
-package com.example.playlistmaker
+package com.example.playlistmaker.presentation.ui
 
-import android.media.MediaPlayer
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
@@ -10,12 +9,18 @@ import android.view.View
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
+import com.example.playlistmaker.R
+import com.example.playlistmaker.domain.api.AudioPlayerInteractor
+import com.example.playlistmaker.domain.models.Track
+import com.example.playlistmaker.util.Creator
 import java.text.SimpleDateFormat
 import java.util.Locale
-import com.example.playlistmaker.SearchActivity.Companion.TRACK_KEY
 
 class MediaActivity : AppCompatActivity() {
 
@@ -25,6 +30,7 @@ class MediaActivity : AppCompatActivity() {
         private const val STATE_PLAYING = 2
         private const val STATE_PAUSED = 3
         private const val TIMER_UPDATE_DELAY = 300L
+        const val TRACK_KEY = "track"
     }
 
     private lateinit var albumArt: ImageView
@@ -39,7 +45,7 @@ class MediaActivity : AppCompatActivity() {
     private lateinit var albumGroup: View
     private lateinit var playPauseButton: ImageButton
 
-    private var mediaPlayer = MediaPlayer()
+    private lateinit var audioPlayerInteractor: AudioPlayerInteractor
     private var playerState = STATE_DEFAULT
     
     private val mainHandler = Handler(Looper.getMainLooper())
@@ -48,15 +54,25 @@ class MediaActivity : AppCompatActivity() {
         override fun run() {
             if (playerState == STATE_PLAYING) {
                 timerText.text = SimpleDateFormat("mm:ss", Locale.getDefault())
-                    .format(mediaPlayer.currentPosition)
+                    .format(audioPlayerInteractor.getCurrentPosition())
                 mainHandler.postDelayed(this, TIMER_UPDATE_DELAY)
             }
         }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_media)
+
+        val rootLayout = findViewById<View>(R.id.album_cover).rootView
+        ViewCompat.setOnApplyWindowInsetsListener(rootLayout) { v, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            insets
+        }
+
+        audioPlayerInteractor = Creator.provideAudioPlayerInteractor()
 
         val backButton = findViewById<TextView>(R.id.button_back)
         backButton.setOnClickListener { finish() }
@@ -110,27 +126,28 @@ class MediaActivity : AppCompatActivity() {
     }
 
     private fun preparePlayer(url: String) {
-        mediaPlayer.setDataSource(url)
-        mediaPlayer.prepareAsync()
-        mediaPlayer.setOnPreparedListener {
-            playPauseButton.isEnabled = true
-            playerState = STATE_PREPARED
-        }
-        mediaPlayer.setOnCompletionListener {
-            pausePlayer()
-            timerText.text = "00:00"
-        }
+        audioPlayerInteractor.preparePlayer(
+            url,
+            onPrepared = {
+                playPauseButton.isEnabled = true
+                playerState = STATE_PREPARED
+            },
+            onCompletion = {
+                pausePlayer()
+                timerText.text = "00:00"
+            }
+        )
     }
 
     private fun startPlayer() {
-        mediaPlayer.start()
+        audioPlayerInteractor.startPlayer()
         playPauseButton.setImageResource(R.drawable.pause)
         playerState = STATE_PLAYING
         mainHandler.post(updateTimerTask)
     }
 
     private fun pausePlayer() {
-        mediaPlayer.pause()
+        audioPlayerInteractor.pausePlayer()
         playPauseButton.setImageResource(R.drawable.play)
         playerState = STATE_PAUSED
         mainHandler.removeCallbacks(updateTimerTask)
@@ -150,7 +167,7 @@ class MediaActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        mediaPlayer.release()
+        audioPlayerInteractor.releasePlayer()
         mainHandler.removeCallbacks(updateTimerTask)
     }
 
