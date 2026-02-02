@@ -1,4 +1,4 @@
-package com.example.playlistmaker
+package com.example.playlistmaker.presentation.ui
 
 import android.media.MediaPlayer
 import android.os.Build
@@ -10,12 +10,16 @@ import android.view.View
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
+import com.example.playlistmaker.R
+import com.example.playlistmaker.domain.models.Track
 import java.text.SimpleDateFormat
 import java.util.Locale
-import com.example.playlistmaker.SearchActivity.Companion.TRACK_KEY
 
 class MediaActivity : AppCompatActivity() {
 
@@ -25,6 +29,7 @@ class MediaActivity : AppCompatActivity() {
         private const val STATE_PLAYING = 2
         private const val STATE_PAUSED = 3
         private const val TIMER_UPDATE_DELAY = 300L
+        const val TRACK_KEY = "track"
     }
 
     private lateinit var albumArt: ImageView
@@ -43,20 +48,28 @@ class MediaActivity : AppCompatActivity() {
     private var playerState = STATE_DEFAULT
     
     private val mainHandler = Handler(Looper.getMainLooper())
+    private val timeFormat = SimpleDateFormat("mm:ss", Locale.getDefault())
 
     private val updateTimerTask = object : Runnable {
         override fun run() {
             if (playerState == STATE_PLAYING) {
-                timerText.text = SimpleDateFormat("mm:ss", Locale.getDefault())
-                    .format(mediaPlayer.currentPosition)
+                timerText.text = timeFormat.format(mediaPlayer.currentPosition)
                 mainHandler.postDelayed(this, TIMER_UPDATE_DELAY)
             }
         }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_media)
+
+        val rootLayout = findViewById<View>(R.id.album_cover).rootView
+        ViewCompat.setOnApplyWindowInsetsListener(rootLayout) { v, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            insets
+        }
 
         val backButton = findViewById<TextView>(R.id.button_back)
         backButton.setOnClickListener { finish() }
@@ -72,6 +85,8 @@ class MediaActivity : AppCompatActivity() {
         countryValue = findViewById(R.id.country_value)
         albumGroup = findViewById(R.id.album_container)
         playPauseButton = findViewById(R.id.btn_play_pause)
+        
+        timerText.text = timeFormat.format(0L) // исправлено согласно рекомендации
 
         val track = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             intent.getSerializableExtra(TRACK_KEY, Track::class.java)
@@ -118,7 +133,7 @@ class MediaActivity : AppCompatActivity() {
         }
         mediaPlayer.setOnCompletionListener {
             pausePlayer()
-            timerText.text = "00:00"
+            timerText.text = timeFormat.format(0L) // исправлено согласно рекомендации
         }
     }
 
