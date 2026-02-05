@@ -66,5 +66,8 @@
     <string name="playing">Воспроизведение</string>
     <string name="paused">Пауза</string>
 
+    <!-- Медиатека -->
+    <string name="medialibrary">Медиатека</string>
+    <string name="medialibrary_is_empty">Ваша медиатека пуста</string>
 
 </resources>
