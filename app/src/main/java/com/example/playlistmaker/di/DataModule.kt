@@ -2,6 +2,7 @@ package com.example.playlistmaker.di
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.media.MediaPlayer
 import com.example.playlistmaker.player.data.PlayerRepositoryImpl
 import com.example.playlistmaker.player.domain.PlayerRepository
 import com.example.playlistmaker.search.data.NetworkClient
@@ -48,8 +49,14 @@ val dataModule = module {
         ExternalNavigator(androidContext())
     }
 
+    // исправлено согласно замечания
+    factory {
+        MediaPlayer()
+    }
+
     factory<PlayerRepository> {
-        PlayerRepositoryImpl()
+        // исправлено согласно замечания
+        PlayerRepositoryImpl(get())
     }
 
     factory<SearchHistoryRepository> {

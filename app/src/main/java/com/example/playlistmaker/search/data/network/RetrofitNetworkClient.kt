@@ -12,7 +12,7 @@ import kotlinx.coroutines.withContext
 class RetrofitNetworkClient(
     private val context: Context,
     private val iTunesService: ITunesApi
-    ) : NetworkClient {
+) : NetworkClient {
 
     override suspend fun doRequest(dto: Any): Response {
         if (!isConnected()) {
