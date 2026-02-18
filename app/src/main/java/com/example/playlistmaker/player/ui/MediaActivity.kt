@@ -11,15 +11,15 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.lifecycle.ViewModelProvider
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.example.playlistmaker.R
 import com.example.playlistmaker.search.domain.models.Track
+import org.koin.androidx.viewmodel.ext.android.viewModel
+import org.koin.core.parameter.parametersOf
 
 // Импорты
 import com.example.playlistmaker.player.ui.PlayerViewModel
-import com.example.playlistmaker.player.ui.PlayerViewModelFactory
 import com.example.playlistmaker.player.ui.PlayerScreenState
 import com.example.playlistmaker.player.ui.PlayerStatus
 
@@ -41,7 +41,9 @@ class MediaActivity : AppCompatActivity() {
     private lateinit var albumGroup: View
     private lateinit var playPauseButton: ImageButton
 
-    private lateinit var viewModel: PlayerViewModel
+    private val viewModel: PlayerViewModel by viewModel {
+        parametersOf(intent.getSerializableExtra(TRACK_KEY) as? Track)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
@@ -59,8 +61,6 @@ class MediaActivity : AppCompatActivity() {
             finish()
             return
         }
-
-        viewModel = ViewModelProvider(this, PlayerViewModelFactory(track))[PlayerViewModel::class.java]
 
         val rootLayout = findViewById<View>(R.id.album_cover).rootView
         ViewCompat.setOnApplyWindowInsetsListener(rootLayout) { v, insets ->
