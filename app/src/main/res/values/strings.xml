@@ -62,6 +62,13 @@
     <string name="genre">Жанр</string>
     <string name="country">Страна</string>
 
+    <!-- Ключи для плеера (исправление ошибки) -->
+    <string name="track_duration">Длительность</string>
+    <string name="track_album">Альбом</string>
+    <string name="track_year">Год</string>
+    <string name="track_genre">Жанр</string>
+    <string name="track_country">Страна</string>
+
     <!-- Состояния плеера -->
     <string name="playing">Воспроизведение</string>
     <string name="paused">Пауза</string>

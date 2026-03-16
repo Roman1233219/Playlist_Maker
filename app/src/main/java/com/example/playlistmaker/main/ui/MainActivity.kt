@@ -1,22 +1,25 @@
 package com.example.playlistmaker.main.ui
 
-import android.content.Intent
 import android.os.Bundle
-import android.widget.Button
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
+import androidx.navigation.NavDestination
+import androidx.navigation.fragment.NavHostFragment
+import androidx.navigation.ui.setupWithNavController
 import com.example.playlistmaker.R
 import com.example.playlistmaker.core.App
-import com.example.playlistmaker.medialibrary.ui.MediaLibraryActivity
-import com.example.playlistmaker.search.ui.SearchActivity
-import com.example.playlistmaker.setting.ui.SettingActivity
+import com.example.playlistmaker.databinding.ActivityMainBinding
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class MainActivity : AppCompatActivity() {
 
+    private lateinit var binding: ActivityMainBinding
     private val viewModel: MainViewModel by viewModel()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         viewModel.themeSettings.observe(this) { settings ->
             (application as App).applyTheme(settings.darkTheme)
@@ -24,22 +27,24 @@ class MainActivity : AppCompatActivity() {
 
         viewModel.loadTheme()
 
-        setContentView(R.layout.activity_main)
+        val navHostFragment = supportFragmentManager.findFragmentById(R.id.container_view) as NavHostFragment
+        val navController = navHostFragment.navController
 
-        val searchButton = findViewById<Button>(R.id.button_search)
-        val mediaButton = findViewById<Button>(R.id.button_media)
-        val settingsButton = findViewById<Button>(R.id.button_settings)
+        binding.bottomNavigation.setupWithNavController(navController)
 
-        searchButton.setOnClickListener {
-            startActivity(Intent(this, SearchActivity::class.java))
+        navController.addOnDestinationChangedListener { _, destination, _ ->
+            updateBottomNavVisibility(destination)
         }
+    }
 
-        mediaButton.setOnClickListener {
-            startActivity(Intent(this, MediaLibraryActivity::class.java))
-        }
-
-        settingsButton.setOnClickListener {
-            startActivity(Intent(this, SettingActivity::class.java))
+    private fun updateBottomNavVisibility(destination: NavDestination) {
+        when (destination.id) {
+            R.id.playerFragment -> {
+                binding.bottomNavigation.visibility = View.GONE
+            }
+            else -> {
+                binding.bottomNavigation.visibility = View.VISIBLE
+            }
         }
     }
 }
