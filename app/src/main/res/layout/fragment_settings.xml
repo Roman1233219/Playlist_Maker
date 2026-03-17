@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/settings_container"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/colorOnPrimary"
+    android:orientation="vertical">
+
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        app:title="@string/settings_title"
+        app:titleTextAppearance="@style/ToolbarTitleTextAppearance"
+        app:titleTextColor="?attr/android:textColorPrimary" />
+
+    <androidx.appcompat.widget.SwitchCompat
+        android:id="@+id/tema_button"
+        style="@style/SettingItemStyle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/tema"
+        android:textColor="?attr/android:textColorPrimary" />
+
+    <TextView
+        android:id="@+id/share_button"
+        style="@style/SettingItemStyle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/share"
+        android:textColor="?attr/android:textColorPrimary"
+        app:drawableEndCompat="@drawable/share" />
+
+    <TextView
+        android:id="@+id/help_button"
+        style="@style/SettingItemStyle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/help"
+        android:textColor="?attr/android:textColorPrimary"
+        app:drawableEndCompat="@drawable/help" />
+
+    <TextView
+        android:id="@+id/strel_r_button"
+        style="@style/SettingItemStyle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/strel_r"
+        android:textColor="?attr/android:textColorPrimary"
+        app:drawableEndCompat="@drawable/strel_r" />
+
+</LinearLayout>
