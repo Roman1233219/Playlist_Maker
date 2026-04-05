@@ -1,12 +1,14 @@
 package com.example.playlistmaker.player.ui
 
-import android.os.Handler
-import android.os.Looper
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.playlistmaker.player.domain.PlayerInteractor
 import com.example.playlistmaker.search.domain.models.Track
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -25,44 +27,24 @@ class PlayerViewModel(
     )
     val screenState: LiveData<PlayerScreenState> get() = _screenState
 
-    private val handler = Handler(Looper.getMainLooper())
     private val timeFormat = SimpleDateFormat("mm:ss", Locale.getDefault())
+    private var timerJob: Job? = null
 
     init {
         preparePlayer()
     }
 
-    private fun setState(playerStatus: PlayerStatus, progress: String) {
-        val newState = PlayerScreenState(track, playerStatus, progress)
-        _screenState.postValue(newState)
-    }
-
-    private val updateTimerTask = object : Runnable {
-        override fun run() {
-            val currentPosition = interactor.getCurrentPosition()
-            val currentProgress = timeFormat.format(currentPosition)
-            val currentState = _screenState.value
-            if (currentState != null) {
-                _screenState.postValue(currentState.copy(playerStatus = PlayerStatus.PLAYING, playProgress = currentProgress))
-            }
-            handler.postDelayed(this, TIMER_UPDATE_DELAY)
-        }
-    }
-
     private fun preparePlayer() {
         interactor.preparePlayer(track.previewUrl ?: "",
             onPrepared = {
-                val currentState = _screenState.value
-                if (currentState != null) {
-                    _screenState.postValue(currentState.copy(playerStatus = PlayerStatus.PREPARED))
-                }
+                _screenState.value = _screenState.value?.copy(playerStatus = PlayerStatus.PREPARED)
             },
             onCompletion = {
-                handler.removeCallbacks(updateTimerTask)
-                val currentState = _screenState.value
-                if (currentState != null) {
-                    _screenState.postValue(currentState.copy(playerStatus = PlayerStatus.PREPARED, playProgress = DEFAULT_TIME))
-                }
+                stopTimer()
+                _screenState.value = _screenState.value?.copy(
+                    playerStatus = PlayerStatus.PREPARED,
+                    playProgress = DEFAULT_TIME
+                )
             }
         )
     }
@@ -78,23 +60,39 @@ class PlayerViewModel(
 
     private fun startPlayer() {
         interactor.startPlayer()
-        handler.post(updateTimerTask)
+        _screenState.value = _screenState.value?.copy(playerStatus = PlayerStatus.PLAYING)
+        startTimer()
     }
 
     fun pausePlayer() {
         interactor.pausePlayer()
-        handler.removeCallbacks(updateTimerTask)
+        stopTimer()
         val currentPosition = interactor.getCurrentPosition()
         val currentProgress = timeFormat.format(currentPosition)
-        val currentState = _screenState.value
-        if (currentState != null) {
-             _screenState.postValue(currentState.copy(playerStatus = PlayerStatus.PAUSED, playProgress = currentProgress))
+        _screenState.value = _screenState.value?.copy(
+            playerStatus = PlayerStatus.PAUSED,
+            playProgress = currentProgress
+        )
+    }
+
+    private fun startTimer() {
+        timerJob = viewModelScope.launch {
+            while (screenState.value?.playerStatus == PlayerStatus.PLAYING) {
+                val currentPosition = interactor.getCurrentPosition()
+                val currentProgress = timeFormat.format(currentPosition)
+                _screenState.value = _screenState.value?.copy(playProgress = currentProgress)
+                delay(TIMER_UPDATE_DELAY)
+            }
         }
+    }
+
+    private fun stopTimer() {
+        timerJob?.cancel()
     }
 
     fun releasePlayer() {
         interactor.releasePlayer()
-        handler.removeCallbacks(updateTimerTask)
+        stopTimer()
     }
 
     override fun onCleared() {

@@ -45,11 +45,13 @@ class SearchFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         val onTrackClick: (Track) -> Unit = { track ->
-            viewModel.addTrackToHistory(track)
-            val bundle = Bundle().apply {
-                putSerializable(PlayerFragment.TRACK_KEY, track)
+            if (viewModel.clickDebounce()) {
+                viewModel.addTrackToHistory(track)
+                val bundle = Bundle().apply {
+                    putSerializable(PlayerFragment.TRACK_KEY, track)
+                }
+                findNavController().navigate(R.id.action_searchFragment_to_playerFragment, bundle)
             }
-            findNavController().navigate(R.id.action_searchFragment_to_playerFragment, bundle)
         }
 
         trackAdapter = TrackAdapter(tracks, onTrackClick)
