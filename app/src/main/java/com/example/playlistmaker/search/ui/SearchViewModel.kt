@@ -17,6 +17,7 @@ class SearchViewModel(
 ) : ViewModel() {
 
     private var searchJob: Job? = null
+    private var isClickAllowed = true
 
     private val _state = MutableLiveData<SearchState>()
     val state: LiveData<SearchState> = _state
@@ -34,18 +35,35 @@ class SearchViewModel(
             _state.postValue(SearchState.Loading)
 
             viewModelScope.launch {
-                val (tracks, errorMessage) = tracksInteractor.search(searchText)
-                if (tracks != null) {
-                    if (tracks.isNotEmpty()) {
-                        _state.postValue(SearchState.Content(tracks))
-                    } else {
-                        _state.postValue(SearchState.Empty)
+                tracksInteractor
+                    .search(searchText)
+                    .collect { pair ->
+                        val tracks = pair.first
+                        val errorMessage = pair.second
+                        if (tracks != null) {
+                            if (tracks.isNotEmpty()) {
+                                _state.postValue(SearchState.Content(tracks))
+                            } else {
+                                _state.postValue(SearchState.Empty)
+                            }
+                        } else if (errorMessage != null) {
+                            _state.postValue(SearchState.Error(errorMessage))
+                        }
                     }
-                } else if (errorMessage != null) {
-                    _state.postValue(SearchState.Error(errorMessage))
-                }
             }
         }
+    }
+
+    fun clickDebounce(): Boolean {
+        val current = isClickAllowed
+        if (isClickAllowed) {
+            isClickAllowed = false
+            viewModelScope.launch {
+                delay(CLICK_DEBOUNCE_DELAY)
+                isClickAllowed = true
+            }
+        }
+        return current
     }
 
     fun showHistory() {
@@ -69,5 +87,6 @@ class SearchViewModel(
 
     companion object {
         private const val SEARCH_DEBOUNCE_DELAY = 2000L
+        private const val CLICK_DEBOUNCE_DELAY = 1000L
     }
 }
