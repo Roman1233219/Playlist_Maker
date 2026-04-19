@@ -14,15 +14,15 @@ data class Track(
     val releaseDate: String?,
     val primaryGenreName: String?,
     val country: String?,
-    val previewUrl: String?
+    val previewUrl: String?,
+    var isFavorite: Boolean = false
 ) : Serializable {
 
     fun getFormattedTime(): String = SimpleDateFormat("mm:ss", Locale.getDefault()).format(trackTimeMillis)
 
-
-    fun getCoverArtwork() = artworkUrl100.replaceAfterLast('/',"512x512bb.jpg")
+    fun getCoverArtwork() = artworkUrl100.replaceAfterLast('/', "512x512bb.jpg")
 
     fun getReleaseYear(): String? {
         return releaseDate?.takeIf { it.length >= 4 }?.substring(0, 4)
     }
-} // исправлено согласно рекомендации
+}

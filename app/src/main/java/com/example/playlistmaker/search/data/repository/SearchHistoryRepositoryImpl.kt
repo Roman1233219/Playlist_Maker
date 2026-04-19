@@ -1,6 +1,7 @@
 package com.example.playlistmaker.search.data.repository
 
 import android.content.SharedPreferences
+import com.example.playlistmaker.data.db.AppDatabase
 import com.example.playlistmaker.search.data.dto.TrackDto
 import com.example.playlistmaker.search.domain.api.SearchHistoryRepository
 import com.example.playlistmaker.search.domain.models.Track
@@ -9,29 +10,41 @@ import com.google.gson.reflect.TypeToken
 
 class SearchHistoryRepositoryImpl(
     private val sharedPreferences: SharedPreferences,
-    private val gson: Gson
+    private val gson: Gson,
+    private val appDatabase: AppDatabase
 ) : SearchHistoryRepository {
 
-    override fun getHistory(): List<Track> {
+    override suspend fun getHistory(): List<Track> {
         val json = sharedPreferences.getString(SEARCH_HISTORY_KEY, null)
         return if (json != null) {
             val type = object : TypeToken<List<TrackDto>>() {}.type
             val dtoHistory: List<TrackDto> = gson.fromJson(json, type)
-            dtoHistory.map { mapToDomain(it) }
+            val favoriteTracksIds = appDatabase.trackDao().getTracksIds()
+            dtoHistory.map { dto ->
+                mapToDomain(dto).apply {
+                    isFavorite = favoriteTracksIds.contains(dto.trackId)
+                }
+            }
         } else {
             emptyList()
         }
     }
 
     override fun addTrack(track: Track) {
-        val history = getHistory().toMutableList()
+        val historyJson = sharedPreferences.getString(SEARCH_HISTORY_KEY, null)
+        val type = object : TypeToken<List<TrackDto>>() {}.type
+        val history: MutableList<TrackDto> = if (historyJson != null) {
+            gson.fromJson(historyJson, type)
+        } else {
+            mutableListOf()
+        }
+
         history.removeAll { it.trackId == track.trackId }
-        history.add(0, track)
+        history.add(0, mapToDto(track))
 
         val limitedHistory = history.take(MAX_HISTORY_SIZE)
-        val dtoHistory = limitedHistory.map { mapToDto(it) }
 
-        val json = gson.toJson(dtoHistory)
+        val json = gson.toJson(limitedHistory)
         sharedPreferences.edit()
             .putString(SEARCH_HISTORY_KEY, json)
             .apply()

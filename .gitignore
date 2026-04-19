@@ -1,15 +1,26 @@
-*.iml
-.gradle
+# Gradle
+.gradle/
+/build/
 /local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
+
+# IntelliJ IDEA / Android Studio
+.idea/
+!.idea/codeStyles/
+!.idea/scopes/
+!.idea/vcs.xml
+!.idea/inspectionProfiles/
+*.iml
+*.iws
+
+# Android
+/captures/
+.externalNativeBuild/
+.cxx/
+
+# OS specific
 .DS_Store
-/build
-/captures
-.externalNativeBuild
-.cxx
-local.properties
+Thumbs.db
+
+# Backup rules
+*.bak
+*.tmp
