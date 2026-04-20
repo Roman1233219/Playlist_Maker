@@ -4,7 +4,6 @@ import com.example.playlistmaker.medialibrary.domain.api.FavoriteTracksInteracto
 import com.example.playlistmaker.medialibrary.domain.api.FavoriteTracksRepository
 import com.example.playlistmaker.search.domain.models.Track
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
 
 class FavoriteTracksInteractorImpl(
     private val repository: FavoriteTracksRepository
@@ -19,8 +18,6 @@ class FavoriteTracksInteractorImpl(
     }
 
     override fun getFavoriteTracks(): Flow<List<Track>> {
-        return repository.getFavoriteTracks().map { tracks ->
-            tracks.reversed()
-        }
+        return repository.getFavoriteTracks()
     }
 }

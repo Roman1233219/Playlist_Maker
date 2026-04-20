@@ -22,7 +22,8 @@ class FavoriteTracksRepositoryImpl(
 
     override fun getFavoriteTracks(): Flow<List<Track>> {
         return appDatabase.trackDao().getTracks().map { tracks ->
-            tracks.map { trackDbConvertor.map(it) }
+            tracks.sortedByDescending { it.timestamp }
+                .map { trackDbConvertor.map(it) }
         }
     }
 }

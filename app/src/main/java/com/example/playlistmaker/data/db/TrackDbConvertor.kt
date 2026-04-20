@@ -15,7 +15,8 @@ class TrackDbConvertor {
             primaryGenreName = track.primaryGenreName,
             country = track.country,
             trackTime = track.getFormattedTime(),
-            previewUrl = track.previewUrl
+            previewUrl = track.previewUrl,
+            timestamp = System.currentTimeMillis()
         )
     }
 
