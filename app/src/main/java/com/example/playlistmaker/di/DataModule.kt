@@ -3,6 +3,9 @@ package com.example.playlistmaker.di
 import android.content.Context
 import android.content.SharedPreferences
 import android.media.MediaPlayer
+import androidx.room.Room
+import com.example.playlistmaker.data.db.AppDatabase
+import com.example.playlistmaker.data.db.TrackDbConvertor
 import com.example.playlistmaker.player.data.PlayerRepositoryImpl
 import com.example.playlistmaker.player.domain.PlayerRepository
 import com.example.playlistmaker.search.data.NetworkClient
@@ -49,22 +52,20 @@ val dataModule = module {
         ExternalNavigator(androidContext())
     }
 
-    // исправлено согласно замечания
     factory {
         MediaPlayer()
     }
 
     factory<PlayerRepository> {
-        // исправлено согласно замечания
         PlayerRepositoryImpl(get())
     }
 
     factory<SearchHistoryRepository> {
-        SearchHistoryRepositoryImpl(get(), get())
+        SearchHistoryRepositoryImpl(get(), get(), get())
     }
 
     factory<TracksRepository> {
-        TracksRepositoryImpl(get())
+        TracksRepositoryImpl(get(), get())
     }
 
     factory<SettingsRepository> {
@@ -74,4 +75,13 @@ val dataModule = module {
     factory<SharingRepository> {
         SharingRepositoryImpl(androidContext(), get())
     }
+
+    single {
+        Room.databaseBuilder(androidContext(), AppDatabase::class.java, "database.db")
+            .build()
+    }
+
+    single { get<AppDatabase>().trackDao() }
+
+    factory { TrackDbConvertor() }
 }

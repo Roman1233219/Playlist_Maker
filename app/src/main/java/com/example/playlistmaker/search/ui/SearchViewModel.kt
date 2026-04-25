@@ -67,8 +67,10 @@ class SearchViewModel(
     }
 
     fun showHistory() {
-        val history = searchHistoryInteractor.getHistory()
-        _state.postValue(SearchState.History(history))
+        viewModelScope.launch {
+            val history = searchHistoryInteractor.getHistory()
+            _state.postValue(SearchState.History(history))
+        }
     }
 
     fun addTrackToHistory(track: Track) {

@@ -50,6 +50,10 @@ class PlayerFragment : Fragment() {
             viewModel.playbackControl()
         }
 
+        binding.btnFavorite.setOnClickListener {
+            viewModel.onFavoriteClicked()
+        }
+
         viewModel.screenState.observe(viewLifecycleOwner) { state ->
             render(state)
         }
@@ -88,6 +92,10 @@ class PlayerFragment : Fragment() {
         binding.countryValue.text = track.country ?: ""
 
         binding.albumContainer.visibility = if (track.collectionName.isNullOrEmpty()) View.GONE else View.VISIBLE
+
+        binding.btnFavorite.setImageResource(
+            if (track.isFavorite) R.drawable.ic_favorite_active else R.drawable.izbran
+        )
     }
 
     override fun onPause() {
