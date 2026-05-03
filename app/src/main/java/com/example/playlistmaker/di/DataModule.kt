@@ -78,10 +78,15 @@ val dataModule = module {
 
     single {
         Room.databaseBuilder(androidContext(), AppDatabase::class.java, "database.db")
+            .fallbackToDestructiveMigration()
             .build()
     }
 
     single { get<AppDatabase>().trackDao() }
+
+    single { get<AppDatabase>().playlistDao() }
+
+    single { get<AppDatabase>().playlistTrackDao() }
 
     factory { TrackDbConvertor() }
 }

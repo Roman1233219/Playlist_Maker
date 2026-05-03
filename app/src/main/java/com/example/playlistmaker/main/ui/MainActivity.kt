@@ -29,14 +29,12 @@ class MainActivity : AppCompatActivity() {
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.updatePadding(top = systemBars.top)
+            v.updatePadding(top = systemBars.top, bottom = systemBars.bottom)
             insets
         }
 
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.bottomNavigation) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.updatePadding(bottom = systemBars.bottom)
             insets
         }
 
@@ -58,7 +56,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun updateBottomNavVisibility(destination: NavDestination) {
         when (destination.id) {
-            R.id.playerFragment -> {
+            R.id.playerFragment, R.id.newPlaylistFragment -> {
                 binding.bottomNavigation.visibility = View.GONE
             }
             else -> {

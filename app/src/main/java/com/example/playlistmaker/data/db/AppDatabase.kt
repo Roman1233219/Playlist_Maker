@@ -3,8 +3,10 @@ package com.example.playlistmaker.data.db
 import androidx.room.Database
 import androidx.room.RoomDatabase
 
-@Database(version = 1, entities = [TrackEntity::class], exportSchema = false)
+@Database(version = 3, entities = [TrackEntity::class, PlaylistEntity::class, PlaylistTrackEntity::class], exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun trackDao(): TrackDao
+    abstract fun playlistDao(): PlaylistDao
+    abstract fun playlistTrackDao(): PlaylistTrackDao
 }

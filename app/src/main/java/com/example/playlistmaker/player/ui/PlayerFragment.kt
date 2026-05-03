@@ -5,13 +5,18 @@ import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.example.playlistmaker.R
 import com.example.playlistmaker.databinding.FragmentPlayerBinding
+import com.example.playlistmaker.medialibrary.ui.PlaylistSmallAdapter
 import com.example.playlistmaker.search.domain.models.Track
+import com.google.android.material.bottomsheet.BottomSheetBehavior
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.koin.core.parameter.parametersOf
 
@@ -19,6 +24,10 @@ class PlayerFragment : Fragment() {
 
     private var _binding: FragmentPlayerBinding? = null
     private val binding get() = _binding!!
+
+    private val adapter = PlaylistSmallAdapter { playlist ->
+        viewModel.addTrackToPlaylist(playlist)
+    }
 
     private val viewModel: PlayerViewModel by viewModel {
         val track = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
@@ -42,6 +51,20 @@ class PlayerFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        val bottomSheetBehavior = BottomSheetBehavior.from(binding.standardBottomSheet).apply {
+            state = BottomSheetBehavior.STATE_HIDDEN
+        }
+
+        bottomSheetBehavior.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
+            override fun onStateChanged(bottomSheet: View, newState: Int) {
+                binding.overlay.isVisible = newState != BottomSheetBehavior.STATE_HIDDEN
+            }
+            override fun onSlide(bottomSheet: View, slideOffset: Float) {}
+        })
+
+        binding.playlistRecycler.layoutManager = LinearLayoutManager(requireContext())
+        binding.playlistRecycler.adapter = adapter
+
         binding.toolbar.setOnClickListener {
             findNavController().navigateUp()
         }
@@ -54,8 +77,34 @@ class PlayerFragment : Fragment() {
             viewModel.onFavoriteClicked()
         }
 
+        binding.btnAdd.setOnClickListener {
+            bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
+            viewModel.observePlaylists()
+        }
+
+        binding.btnNewPlaylist.setOnClickListener {
+            findNavController().navigate(R.id.action_playerFragment_to_newPlaylistFragment)
+        }
+
         viewModel.screenState.observe(viewLifecycleOwner) { state ->
             render(state)
+        }
+
+        viewModel.playlists.observe(viewLifecycleOwner) { playlists ->
+            adapter.playlists.clear()
+            adapter.playlists.addAll(playlists)
+            adapter.notifyDataSetChanged()
+        }
+
+        viewModel.addingResult.observe(viewLifecycleOwner) { result ->
+            val (playlistName, isAdded) = result
+            val message = if (isAdded) {
+                bottomSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
+                getString(R.string.track_added_to_playlist, playlistName)
+            } else {
+                getString(R.string.track_already_in_playlist, playlistName)
+            }
+            Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
         }
     }
 

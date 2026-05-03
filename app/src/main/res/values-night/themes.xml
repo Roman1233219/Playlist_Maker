@@ -7,8 +7,8 @@
         <item name="colorOnPrimary">@color/YP_Black</item>
         <item name="android:textColorPrimary">@color/white</item>
         <item name="android:textColorSecondary">@color/YP_Black</item>
-        <item name="colorOnSurface">@color/YP_Black</item>
-        <item name="colorOnSurfaceVariant">@color/YP_Black</item>
+        <item name="colorOnSurface">@color/white</item>
+        <item name="colorOnSurfaceVariant">@color/white</item>
         <item name="colorSecondary">@color/white</item>
         <item name="colorSurface">@color/YP_Black</item>
         <item name="colorPrimaryContainer">@color/white</item>
