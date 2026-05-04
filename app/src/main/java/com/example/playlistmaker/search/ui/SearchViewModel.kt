@@ -22,7 +22,15 @@ class SearchViewModel(
     private val _state = MutableLiveData<SearchState>()
     val state: LiveData<SearchState> = _state
 
+    // Устранение ошибки: сохранение текста и предотвращение повторных запросов
+    private var lastSearchText: String? = null
+    private var lastSearchQuery: String? = null
+
     fun searchDebounce(searchText: String) {
+        lastSearchQuery = searchText
+        if (lastSearchText == searchText) return
+        this.lastSearchText = searchText
+
         searchJob?.cancel()
         searchJob = viewModelScope.launch {
             delay(SEARCH_DEBOUNCE_DELAY)
@@ -81,6 +89,8 @@ class SearchViewModel(
         searchHistoryInteractor.clearHistory()
         _state.postValue(SearchState.History(emptyList()))
     }
+
+    fun getLastQuery(): String? = lastSearchQuery
 
     override fun onCleared() {
         super.onCleared()

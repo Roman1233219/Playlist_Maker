@@ -69,8 +69,11 @@ class SearchFragment : Fragment() {
             render(it)
         }
 
-        if (binding.searchEditText.text.isEmpty()) {
-            viewModel.showHistory()
+        // Устранение ошибки: восстановление текста поиска при возвращении на экран
+        val lastQuery = viewModel.getLastQuery()
+        if (!lastQuery.isNullOrEmpty() && binding.searchEditText.text.isEmpty()) {
+            binding.searchEditText.setText(lastQuery)
+            binding.searchEditText.setSelection(lastQuery.length)
         }
     }
 

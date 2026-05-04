@@ -47,7 +47,7 @@
                     android:layout_marginStart="46dp"
                     android:layout_marginTop="26dp"
                     android:layout_marginEnd="46dp"
-                    android:background="@drawable/rounded_corners"
+                    android:background="@android:color/transparent"
                     android:clipToOutline="true"
                     android:contentDescription="@string/album_cover_description"
                     android:scaleType="centerCrop"
