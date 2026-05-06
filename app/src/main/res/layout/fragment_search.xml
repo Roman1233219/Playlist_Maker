@@ -36,8 +36,8 @@
             android:paddingStart="12dp"
             android:paddingEnd="48dp"
             android:singleLine="true"
-            android:textColor="?attr/colorOnSurface"
-            android:textColorHint="?attr/colorSurface"
+            android:textColor="@color/YP_Black"
+            android:textColorHint="@color/YP_Text_Gray"
             android:textFontWeight="400" />
 
         <ImageView

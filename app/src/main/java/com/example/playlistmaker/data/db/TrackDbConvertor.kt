@@ -20,6 +20,22 @@ class TrackDbConvertor {
         )
     }
 
+    fun mapToPlaylistTrack(track: Track): PlaylistTrackEntity {
+        return PlaylistTrackEntity(
+            trackId = track.trackId,
+            artworkUrl100 = track.artworkUrl100,
+            trackName = track.trackName,
+            artistName = track.artistName,
+            collectionName = track.collectionName,
+            releaseYear = track.getReleaseYear(),
+            primaryGenreName = track.primaryGenreName,
+            country = track.country,
+            trackTime = track.getFormattedTime(),
+            previewUrl = track.previewUrl,
+            timestamp = System.currentTimeMillis()
+        )
+    }
+
     fun map(trackEntity: TrackEntity): Track {
         return Track(
             trackId = trackEntity.trackId,

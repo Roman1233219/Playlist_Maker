@@ -5,10 +5,14 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.playlistmaker.medialibrary.domain.api.FavoriteTracksInteractor
+import com.example.playlistmaker.medialibrary.domain.api.PlaylistsInteractor
+import com.example.playlistmaker.medialibrary.domain.models.Playlist
 import com.example.playlistmaker.player.domain.PlayerInteractor
 import com.example.playlistmaker.search.domain.models.Track
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -16,7 +20,8 @@ import java.util.Locale
 class PlayerViewModel(
     private val track: Track,
     private val interactor: PlayerInteractor,
-    private val favoriteTracksInteractor: FavoriteTracksInteractor
+    private val favoriteTracksInteractor: FavoriteTracksInteractor,
+    private val playlistsInteractor: PlaylistsInteractor
 ) : ViewModel() {
 
     companion object {
@@ -32,8 +37,38 @@ class PlayerViewModel(
     private val timeFormat = SimpleDateFormat("mm:ss", Locale.getDefault())
     private var timerJob: Job? = null
 
+    private val _playlists = MutableLiveData<List<Playlist>>()
+    val playlists: LiveData<List<Playlist>> = _playlists
+
+    private val _addingResult = MutableLiveData<Pair<String, Boolean>>()
+    val addingResult: LiveData<Pair<String, Boolean>> = _addingResult
+
     init {
         preparePlayer()
+    }
+
+    fun observePlaylists() {
+        viewModelScope.launch {
+            playlistsInteractor.getPlaylists().collect { list ->
+                _playlists.postValue(list)
+            }
+        }
+    }
+
+    fun addTrackToPlaylist(playlist: Playlist) {
+        if (playlist.trackIds.contains(track.trackId)) {
+            _addingResult.postValue(Pair(playlist.name, false))
+        } else {
+            viewModelScope.launch {
+                val updatedTrackIds = playlist.trackIds.toMutableList().apply { add(track.trackId) }
+                val updatedPlaylist = playlist.copy(
+                    trackIds = updatedTrackIds,
+                    tracksCount = updatedTrackIds.size
+                )
+                playlistsInteractor.addTrackToPlaylist(updatedPlaylist, track)
+                _addingResult.postValue(Pair(playlist.name, true))
+            }
+        }
     }
 
     private fun preparePlayer() {
