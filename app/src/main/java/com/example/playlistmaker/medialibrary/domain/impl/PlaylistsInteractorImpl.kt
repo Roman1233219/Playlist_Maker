@@ -6,7 +6,10 @@ import com.example.playlistmaker.medialibrary.domain.models.Playlist
 import com.example.playlistmaker.search.domain.models.Track
 import kotlinx.coroutines.flow.Flow
 
-class PlaylistsInteractorImpl(private val repository: PlaylistsRepository) : PlaylistsInteractor {
+class PlaylistsInteractorImpl(
+    private val repository: PlaylistsRepository
+) : PlaylistsInteractor {
+
     override suspend fun insertPlaylist(playlist: Playlist) {
         repository.insertPlaylist(playlist)
     }
@@ -25,5 +28,17 @@ class PlaylistsInteractorImpl(private val repository: PlaylistsRepository) : Pla
 
     override suspend fun addTrackToPlaylist(playlist: Playlist, track: Track) {
         repository.addTrackToPlaylist(playlist, track)
+    }
+
+    override fun getTracksFromPlaylist(trackIds: List<Long>): Flow<List<Track>> {
+        return repository.getTracksFromPlaylist(trackIds)
+    }
+
+    override suspend fun deleteTrackFromPlaylist(playlist: Playlist, track: Track) {
+        repository.deleteTrackFromPlaylist(playlist, track)
+    }
+
+    override suspend fun deletePlaylist(playlist: Playlist) {
+        repository.deletePlaylist(playlist)
     }
 }

@@ -17,4 +17,8 @@ class SharingInteractorImpl(
     override fun openSupport() {
         sharingRepository.openSupport()
     }
+
+    override fun shareText(text: String) {
+        sharingRepository.shareText(text)
+    }
 }

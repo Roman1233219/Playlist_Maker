@@ -4,4 +4,5 @@ interface SharingRepository {
     fun shareApp()
     fun openSupport()
     fun openTerms()
+    fun shareText(text: String)
 }

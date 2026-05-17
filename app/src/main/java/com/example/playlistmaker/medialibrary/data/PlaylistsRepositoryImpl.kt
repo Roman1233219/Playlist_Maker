@@ -6,6 +6,7 @@ import com.example.playlistmaker.medialibrary.domain.api.PlaylistsRepository
 import com.example.playlistmaker.medialibrary.domain.models.Playlist
 import com.example.playlistmaker.search.domain.models.Track
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 
 class PlaylistsRepositoryImpl(
@@ -35,5 +36,46 @@ class PlaylistsRepositoryImpl(
     override suspend fun addTrackToPlaylist(playlist: Playlist, track: Track) {
         appDatabase.playlistTrackDao().insertTrack(trackConvertor.mapToPlaylistTrack(track))
         updatePlaylist(playlist)
+    }
+
+    override fun getTracksFromPlaylist(trackIds: List<Long>): Flow<List<Track>> = flow {
+        val tracks = trackIds.mapNotNull { id ->
+            appDatabase.playlistTrackDao().getTrackById(id)?.let {
+                trackConvertor.map(it)
+            }
+        }
+        emit(tracks.reversed()) // Обычно в плейлисте новые треки сверху
+    }
+
+    override suspend fun deleteTrackFromPlaylist(playlist: Playlist, track: Track) {
+        val updatedTrackIds = playlist.trackIds.filter { it != track.trackId }
+        val updatedPlaylist = playlist.copy(
+            trackIds = updatedTrackIds,
+            tracksCount = updatedTrackIds.size
+        )
+        updatePlaylist(updatedPlaylist)
+
+        cleanupUnusedTracks()
+    }
+
+    override suspend fun deletePlaylist(playlist: Playlist) {
+        appDatabase.playlistDao().deletePlaylist(playlist.id)
+        cleanupUnusedTracks()
+    }
+
+    private suspend fun cleanupUnusedTracks() {
+        val allPlaylists = appDatabase.playlistDao().getAllPlaylists()
+        val allTracksInPlaylists = mutableSetOf<Long>()
+        allPlaylists.forEach { entity ->
+            val p = convertor.map(entity)
+            allTracksInPlaylists.addAll(p.trackIds)
+        }
+
+        val allTracksInTable = appDatabase.playlistTrackDao().getAllTracks()
+        allTracksInTable.forEach { trackEntity ->
+            if (!allTracksInPlaylists.contains(trackEntity.trackId)) {
+                appDatabase.playlistTrackDao().deleteTrack(trackEntity.trackId)
+            }
+        }
     }
 }

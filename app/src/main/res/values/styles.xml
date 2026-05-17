@@ -85,4 +85,14 @@
         <item name="android:gravity">end</item>
     </style>
 
+    <style name="RoundedCorners8">
+        <item name="cornerSize">8dp</item>
+    </style>
+
+    <style name="DialogStyle" parent="Theme.MaterialComponents.Light.Dialog.Alert">
+        <item name="colorPrimary">@color/blue</item>
+        <item name="colorOnSurface">@color/YP_Black</item>
+        <item name="android:textColorPrimary">@color/YP_Black</item>
+    </style>
+
 </resources>

@@ -22,6 +22,10 @@ class SharingRepositoryImpl(
         externalNavigator.openEmail(getSupportEmailData())
     }
 
+    override fun shareText(text: String) {
+        externalNavigator.shareText(text)
+    }
+
     private fun getShareAppLink(): String {
         return context.getString(R.string.android_course_url)
     }

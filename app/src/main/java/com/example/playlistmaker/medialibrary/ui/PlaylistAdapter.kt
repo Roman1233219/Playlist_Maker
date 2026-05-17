@@ -10,7 +10,9 @@ import com.example.playlistmaker.databinding.ItemPlaylistBinding
 import com.example.playlistmaker.medialibrary.domain.models.Playlist
 import java.io.File
 
-class PlaylistAdapter : RecyclerView.Adapter<PlaylistAdapter.PlaylistViewHolder>() {
+class PlaylistAdapter(
+    private val clickListener: (Playlist) -> Unit
+) : RecyclerView.Adapter<PlaylistAdapter.PlaylistViewHolder>() {
 
     var playlists = mutableListOf<Playlist>()
 
@@ -20,7 +22,9 @@ class PlaylistAdapter : RecyclerView.Adapter<PlaylistAdapter.PlaylistViewHolder>
     }
 
     override fun onBindViewHolder(holder: PlaylistViewHolder, position: Int) {
-        holder.bind(playlists[position])
+        val playlist = playlists[position]
+        holder.bind(playlist)
+        holder.itemView.setOnClickListener { clickListener(playlist) }
     }
 
     override fun getItemCount(): Int = playlists.size

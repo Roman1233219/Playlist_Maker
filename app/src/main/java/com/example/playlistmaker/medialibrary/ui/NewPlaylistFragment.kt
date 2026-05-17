@@ -24,14 +24,14 @@ import org.koin.androidx.viewmodel.ext.android.viewModel
 import java.io.File
 import java.io.FileOutputStream
 
-class NewPlaylistFragment : Fragment() {
+open class NewPlaylistFragment : Fragment() {
 
     private var _binding: FragmentNewPlaylistBinding? = null
-    private val binding get() = _binding!!
+    protected val binding get() = _binding!!
 
-    private val viewModel: NewPlaylistViewModel by viewModel()
+    protected val viewModel: NewPlaylistViewModel by viewModel()
 
-    private var imageUri: Uri? = null
+    protected var imageUri: Uri? = null
 
     private val pickMedia = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
         if (uri != null) {
@@ -92,7 +92,7 @@ class NewPlaylistFragment : Fragment() {
         })
     }
 
-    private fun saveImageToInternalStorage(uri: Uri): String {
+    protected fun saveImageToInternalStorage(uri: Uri): String {
         val filePath = File(requireActivity().getExternalFilesDir(Environment.DIRECTORY_PICTURES), "playlist_covers")
         if (!filePath.exists()) {
             filePath.mkdirs()
@@ -106,7 +106,7 @@ class NewPlaylistFragment : Fragment() {
         return file.absolutePath
     }
 
-    private fun handleBackNavigation() {
+    protected open fun handleBackNavigation() {
         if (imageUri != null || !binding.playlistName.text.isNullOrBlank() || !binding.playlistDescription.text.isNullOrBlank()) {
             showConfirmDialog()
         } else {
