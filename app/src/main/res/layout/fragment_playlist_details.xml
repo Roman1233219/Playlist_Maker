@@ -135,16 +135,29 @@
             android:layout_marginTop="12dp"
             tools:listitem="@layout/item_track" />
 
-        <TextView
-            android:id="@+id/empty_playlist_message"
+        <LinearLayout
+            android:id="@+id/empty_playlist_placeholder"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
+            android:layout_height="match_parent"
             android:gravity="center"
-            android:text="@string/empty_playlist_tracks"
-            android:textColor="@color/YP_Black"
-            android:textSize="18sp"
-            android:visibility="gone" />
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <ImageView
+                android:layout_width="120dp"
+                android:layout_height="120dp"
+                android:src="@drawable/placeholder_no_results" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:padding="24dp"
+                android:text="@string/empty_playlist_tracks"
+                android:textColor="?attr/android:textColorPrimary"
+                android:textSize="19sp" />
+
+        </LinearLayout>
     </LinearLayout>
 
     <View

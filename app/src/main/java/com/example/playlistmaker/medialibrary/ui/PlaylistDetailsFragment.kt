@@ -180,10 +180,10 @@ class PlaylistDetailsFragment : Fragment() {
 
     private fun renderTracks(tracks: List<Track>) {
         if (tracks.isEmpty()) {
-            binding.emptyPlaylistMessage.visibility = View.VISIBLE
+            binding.emptyPlaylistPlaceholder.visibility = View.VISIBLE
             binding.tracksRecyclerView.visibility = View.GONE
         } else {
-            binding.emptyPlaylistMessage.visibility = View.GONE
+            binding.emptyPlaylistPlaceholder.visibility = View.GONE
             binding.tracksRecyclerView.visibility = View.VISIBLE
             trackAdapter?.updateTracks(tracks)
         }
