@@ -56,7 +56,8 @@ class MainActivity : AppCompatActivity() {
 
     private fun updateBottomNavVisibility(destination: NavDestination) {
         when (destination.id) {
-            R.id.playerFragment, R.id.newPlaylistFragment -> {
+            R.id.playerFragment, R.id.newPlaylistFragment,
+            R.id.playlistDetailsFragment, R.id.editPlaylistFragment -> {
                 binding.bottomNavigation.visibility = View.GONE
             }
             else -> {

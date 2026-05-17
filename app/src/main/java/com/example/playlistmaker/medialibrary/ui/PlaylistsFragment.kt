@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
@@ -20,7 +21,12 @@ class PlaylistsFragment : Fragment() {
     private var _binding: FragmentPlaylistsBinding? = null
     private val binding get() = _binding!!
 
-    private val adapter = PlaylistAdapter()
+    private val adapter = PlaylistAdapter { playlist ->
+        findNavController().navigate(
+            R.id.action_mediaLibraryFragment_to_playlistDetailsFragment,
+            bundleOf("playlistId" to playlist.id)
+        )
+    }
 
     companion object {
         fun newInstance() = PlaylistsFragment()
@@ -47,7 +53,10 @@ class PlaylistsFragment : Fragment() {
         viewModel.playlists.observe(viewLifecycleOwner) { playlists ->
             render(playlists)
         }
+    }
 
+    override fun onResume() {
+        super.onResume()
         viewModel.fillData()
     }
 

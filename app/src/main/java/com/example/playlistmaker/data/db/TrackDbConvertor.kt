@@ -52,6 +52,22 @@ class TrackDbConvertor {
         )
     }
 
+    fun map(trackEntity: PlaylistTrackEntity): Track {
+        return Track(
+            trackId = trackEntity.trackId,
+            trackName = trackEntity.trackName,
+            artistName = trackEntity.artistName,
+            trackTimeMillis = parseFormattedTime(trackEntity.trackTime),
+            artworkUrl100 = trackEntity.artworkUrl100,
+            collectionName = trackEntity.collectionName,
+            releaseDate = trackEntity.releaseYear,
+            primaryGenreName = trackEntity.primaryGenreName,
+            country = trackEntity.country,
+            previewUrl = trackEntity.previewUrl,
+            isFavorite = false
+        )
+    }
+
     private fun parseFormattedTime(formattedTime: String?): Long {
         if (formattedTime == null) return 0L
         val parts = formattedTime.split(":")

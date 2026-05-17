@@ -12,7 +12,8 @@ import com.example.playlistmaker.search.domain.models.Track
 
 class TrackAdapter(
     private var tracks: List<Track>,
-    private val onTrackClick: (Track) -> Unit
+    private val onTrackClick: (Track) -> Unit,
+    private val onLongClick: ((Track) -> Unit)? = null
 ) : RecyclerView.Adapter<TrackAdapter.TrackViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TrackViewHolder {
@@ -26,6 +27,11 @@ class TrackAdapter(
 
         holder.itemView.setOnClickListener {
             onTrackClick(track)
+        }
+
+        holder.itemView.setOnLongClickListener {
+            onLongClick?.invoke(track)
+            onLongClick != null
         }
     }
 

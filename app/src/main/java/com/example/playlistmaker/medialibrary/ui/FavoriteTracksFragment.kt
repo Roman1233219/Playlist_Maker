@@ -38,9 +38,12 @@ class FavoriteTracksFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        trackAdapter = TrackAdapter(mutableListOf()) { track ->
-            openPlayer(track)
-        }
+        trackAdapter = TrackAdapter(
+            tracks = mutableListOf(),
+            onTrackClick = { track ->
+                openPlayer(track)
+            }
+        )
 
         binding.favoriteTracksRecycler.adapter = trackAdapter
 
